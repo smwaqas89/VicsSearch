@@ -290,7 +290,6 @@ ruff format src/
 See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues and solutions.
 
 **Common Issues:**
-- Port 5000 conflict on macOS → Use port 8080 (default)
 - Ollama not running → Start with `ollama serve`
 - OCR not working → Install Tesseract: `brew install tesseract`
 
