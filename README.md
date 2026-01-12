@@ -272,7 +272,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for gui
 
 ```bash
 # Clone and setup
-git clone https://github.com/mwaqas-vics/VicsSearch.git
+git clone https://github.com/smwaqas89/VicsSearch.git
 cd VicsSearch
 pip install -e ".[dev]"
 
