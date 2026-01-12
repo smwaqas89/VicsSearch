@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VicsSearch - Enterprise Local Document Search with AI">
+    <title>VicsSearch</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                </div>
+                <span class="brand-name">VicsSearch</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-view="search" onclick="switchView('search')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <span>Search</span>
+                </button>
+                <button class="nav-btn" data-view="settings" onclick="switchView('settings')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    <span>Settings</span>
+                </button>
+            </nav>
+
+            <!-- Saved Searches -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <span>Saved Searches</span>
+                    <button class="icon-btn-sm" onclick="saveCurrentSearch()" title="Save current search">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 5v14M5 12h14"/></svg>
+                    </button>
+                </div>
+                <div id="saved-searches" class="saved-list"></div>
+            </div>
+
+            <!-- Recent Searches -->
+            <div class="sidebar-section">
+                <div class="section-header"><span>Recent</span></div>
+                <div id="recent-searches" class="recent-list"></div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="privacy-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>100% Local • Private</span>
+                </div>
+                <div class="footer-actions">
+                    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
+                        <svg class="icon-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        <svg class="icon-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    </button>
+                    <button class="icon-btn" onclick="showKeyboardShortcuts()" title="Keyboard shortcuts (?)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M6 16h12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-area">
+            <!-- Search View -->
+            <div id="view-search" class="view active">
+                <!-- Search Header -->
+                <header class="search-header" id="search-header">
+                    <div class="search-container">
+                        <div class="search-box">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                            <input type="text" id="search-input" placeholder="Search your documents..." autocomplete="off">
+                            <div class="search-mode-toggle">
+                                <button class="mode-chip active" data-mode="search" onclick="setSearchMode('search')">Search</button>
+                                <button class="mode-chip" data-mode="ai" onclick="setSearchMode('ai')">Ask AI</button>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Three Panel Layout -->
+                <div class="panels-container">
+                    <!-- Results Panel -->
+                    <div class="panel results-panel" id="results-panel">
+                        <div class="panel-header">
+                            <div class="results-meta" id="results-meta">
+                                <span class="results-count" id="results-count">Ready to search</span>
+                                <span class="results-time" id="results-time"></span>
+                            </div>
+                            <div class="panel-actions">
+                                <button class="icon-btn-sm" onclick="exportResults('json')" title="Export JSON">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Answer Section -->
+                        <div id="ai-answer-section" class="ai-answer-section hidden">
+                            <div class="ai-response-card">
+                                <div class="ai-response-header">
+                                    <div class="ai-avatar">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                                    </div>
+                                    <div class="ai-response-title">
+                                        <span class="ai-label">AI Answer</span>
+                                        <span class="ai-model">Powered by Ollama</span>
+                                    </div>
+                                    <div class="ai-response-actions">
+                                        <button class="icon-btn-sm" onclick="copyAIAnswer()" title="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+                                        <button class="icon-btn-sm" onclick="exportAIAnswer('md')" title="Export MD"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+                                    </div>
+                                </div>
+                                <div class="ai-response-body" id="ai-response-body"></div>
+                                <div class="ai-citations" id="ai-citations"></div>
+                                <div class="ai-followup">
+                                    <input type="text" id="ai-followup" placeholder="Ask a follow-up question..." onkeypress="handleFollowup(event)">
+                                    <button onclick="sendFollowup()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- AI Scope Controls -->
+                            <div class="ai-scope-bar">
+                                <span>AI Context:</span>
+                                <button class="scope-chip active" data-scope="results">Search Results</button>
+                                <button class="scope-chip" data-scope="selected">Selected Docs</button>
+                                <button class="scope-chip" data-scope="all">All Documents</button>
+                            </div>
+                        </div>
+
+                        <!-- Results List -->
+                        <div class="results-list" id="results-list">
+                            <!-- Empty State -->
+                            <div class="empty-state" id="empty-state">
+                                <div class="empty-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                                </div>
+                                <h3>Search Your Documents</h3>
+                                <p>Type a query or press <kbd>/</kbd> to focus search</p>
+                                <div class="shortcuts-hint">
+                                    <span><kbd>Enter</kbd> Search</span>
+                                    <span><kbd>⇧ Enter</kbd> Ask AI</span>
+                                    <span><kbd>⌘ K</kbd> Commands</span>
+                                </div>
+                            </div>
+                            <!-- Skeleton Loader -->
+                            <div class="skeleton-loader hidden" id="skeleton-loader">
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Panel -->
+                    <div class="panel preview-panel hidden" id="preview-panel">
+                        <div class="panel-header">
+                            <div class="preview-title" id="preview-title">Document Preview</div>
+                            <div class="panel-actions">
+                                <button class="icon-btn-sm" onclick="openInSystem()" title="Open in system">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                </button>
+                                <button class="icon-btn-sm" onclick="closePreview()" title="Close">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="preview-meta" id="preview-meta"></div>
+                        <div class="preview-content" id="preview-content"></div>
+                        <div class="preview-footer">
+                            <div class="page-nav" id="page-nav"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="view">
+                <div class="view-header"><h2>Settings</h2></div>
+                <div class="settings-content">
+                    <!-- Index Status Card -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <h3>Index Status</h3>
+                            <span class="status-badge" id="index-status-badge">Ready</span>
+                        </div>
+                        <div class="index-stats">
+                            <div class="stat"><span class="stat-value" id="stat-docs">0</span><span class="stat-label">Documents</span></div>
+                            <div class="stat"><span class="stat-value" id="stat-chunks">0</span><span class="stat-label">Chunks</span></div>
+                            <div class="stat"><span class="stat-value" id="stat-pending">0</span><span class="stat-label">Pending</span></div>
+                            <div class="stat"><span class="stat-value" id="stat-errors">0</span><span class="stat-label">Errors</span></div>
+                        </div>
+                        <div class="index-meta">
+                            <span id="last-indexed">Last indexed: Never</span>
+                        </div>
+                        <div class="progress-bar hidden" id="index-progress">
+                            <div class="progress-fill" id="progress-fill"></div>
+                            <span class="progress-text" id="progress-text">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Folders Card -->
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <h3>Indexed Folders</h3>
+                            <button class="btn btn-sm" onclick="openFolderBrowser()">Add Folder</button>
+                        </div>
+                        <div class="folders-list" id="folders-list">
+                            <div class="drop-zone" id="drop-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                                <p>Drop folder or click Add Folder</p>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn btn-primary" onclick="startIndexing()" id="btn-index">Start Indexing</button>
+                            <button class="btn btn-outline" onclick="viewErrors()">View Errors</button>
+                            <button class="btn btn-danger" onclick="clearIndex()">Clear Index</button>
+                        </div>
+                    </div>
+
+                    <!-- File Types -->
+                    <div class="settings-card">
+                        <div class="card-header"><h3>File Types</h3></div>
+                        <div class="file-types" id="file-types">
+                            <label><input type="checkbox" value="pdf" checked> PDF</label>
+                            <label><input type="checkbox" value="docx" checked> DOCX</label>
+                            <label><input type="checkbox" value="doc" checked> DOC</label>
+                            <label><input type="checkbox" value="txt" checked> TXT</label>
+                            <label><input type="checkbox" value="md" checked> Markdown</label>
+                            <label><input type="checkbox" value="xlsx" checked> Excel</label>
+                            <label><input type="checkbox" value="csv" checked> CSV</label>
+                            <label><input type="checkbox" value="html" checked> HTML</label>
+                            <label><input type="checkbox" value="json" checked> JSON</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Command Palette Modal -->
+    <div id="command-palette" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeCommandPalette()"></div>
+        <div class="command-palette-content">
+            <input type="text" id="command-input" placeholder="Type a command..." oninput="filterCommands(this.value)">
+            <div class="command-list" id="command-list"></div>
+        </div>
+    </div>
+
+    <!-- Folder Browser Modal -->
+    <div id="folder-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeFolderModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Folder</h3>
+                <button class="icon-btn" onclick="closeFolderModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="breadcrumb" id="folder-breadcrumb"></div>
+            <div class="folder-list" id="folder-browser-list"></div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeFolderModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="selectFolder()">Select</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="shortcuts-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeShortcutsModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Keyboard Shortcuts</h3>
+                <button class="icon-btn" onclick="closeShortcutsModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="shortcuts-list">
+                <div class="shortcut"><kbd>/</kbd><span>Focus search</span></div>
+                <div class="shortcut"><kbd>Enter</kbd><span>Search</span></div>
+                <div class="shortcut"><kbd>⇧ Enter</kbd><span>Ask AI</span></div>
+                <div class="shortcut"><kbd>⌘ K</kbd><span>Command palette</span></div>
+                <div class="shortcut"><kbd>Esc</kbd><span>Close panel/modal</span></div>
+                <div class="shortcut"><kbd>↑ ↓</kbd><span>Navigate results</span></div>
+                <div class="shortcut"><kbd>→</kbd><span>Open preview</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- AI Thinking Overlay -->
+    <div id="ai-thinking" class="ai-thinking hidden">
+        <div class="thinking-content">
+            <div class="thinking-orb">
+                <div class="orb-ring"></div>
+                <div class="orb-ring"></div>
+                <div class="orb-ring"></div>
+                <div class="orb-core"></div>
+            </div>
+            <div class="thinking-text">
+                <span class="thinking-label">AI is analyzing</span>
+                <span class="thinking-dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
